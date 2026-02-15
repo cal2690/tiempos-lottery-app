@@ -2,6 +2,8 @@ import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
 import { useState } from 'react';
 import { getAvailableSchedules } from '../utils/getAvailableSchedules';
 import { CountryCode } from '../constants/schedules';
+import { createActiveRaffle } from '../utils/createActiveRaffle';
+
 
 export default function SelectTimeScreen() {
   const [country, setCountry] = useState<CountryCode>('CR');
@@ -37,10 +39,22 @@ export default function SelectTimeScreen() {
       <Text style={styles.subtitle}>Tiempos disponibles hoy</Text>
 
       {schedules.map(schedule => (
-        <TouchableOpacity key={schedule.hour} style={styles.timeButton}>
+        <TouchableOpacity
+          key={schedule.hour}
+          style={styles.timeButton}
+          onPress={() => {
+            const raffle = createActiveRaffle(
+              country,
+              schedule.hour,
+              schedule.label
+            );
+            console.log('Active raffle:', raffle);
+          }}
+        >
           <Text>{schedule.label}</Text>
         </TouchableOpacity>
       ))}
+
 
       {schedules.length === 0 && (
         <Text style={styles.noTimes}>
