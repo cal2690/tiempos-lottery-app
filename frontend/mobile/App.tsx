@@ -1,5 +1,5 @@
-import HomeScreen from './src/screens/HomeScreen';
+import SelectTimeScreen from './src/screens/SelectTimeScreen';
 
 export default function App() {
-  return <HomeScreen />;
+  return <SelectTimeScreen />;
 }
