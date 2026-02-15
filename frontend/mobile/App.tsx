@@ -1,5 +1,5 @@
-import SelectTimeScreen from './src/screens/SelectTimeScreen';
+import RegisterNumbersScreen from './src/screens/RegisterNumbersScreen';
 
 export default function App() {
-  return <SelectTimeScreen />;
+  return <RegisterNumbersScreen />;
 }
