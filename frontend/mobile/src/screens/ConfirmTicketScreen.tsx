@@ -1,4 +1,13 @@
-import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
+import {
+  View,
+  Text,
+  TouchableOpacity,
+  StyleSheet,
+  Alert,
+} from 'react-native';
+import { useRef } from 'react';
+import ViewShot from 'react-native-view-shot';
+import * as Sharing from 'expo-sharing';
 import { useRoute, RouteProp } from '@react-navigation/native';
 import { RootStackParamList } from '../navigation/AppNavigator';
 import TicketPreview from '../components/TicketPreview';
@@ -12,17 +21,52 @@ export default function ConfirmTicketScreen() {
   const route = useRoute<ConfirmRouteProp>();
   const { raffle, numbers, total } = route.params;
 
+  // Ref correcto del componente ViewShot
+  const viewRef = useRef<ViewShot | null>(null);
+
+  const shareTicket = async () => {
+    try {
+      if (!viewRef.current) return;
+
+      // Cast necesario porque la librería no tipa bien capture()
+      const uri = await (viewRef.current as any).capture();
+
+      const available = await Sharing.isAvailableAsync();
+
+      if (!available) {
+        Alert.alert(
+          'Error',
+          'Compartir no está disponible en este dispositivo'
+        );
+        return;
+      }
+
+      await Sharing.shareAsync(uri);
+
+    } catch (error) {
+      Alert.alert('Error', 'No se pudo generar el ticket');
+    }
+  };
+
   return (
     <View style={styles.container}>
-      <TicketPreview
-        raffle={raffle}
-        numbers={numbers}
-        total={total}
-      />
+      <ViewShot
+        ref={viewRef}
+        options={{ format: 'png', quality: 1 }}
+      >
+        <TicketPreview
+          raffle={raffle}
+          numbers={numbers}
+          total={total}
+        />
+      </ViewShot>
 
-      <TouchableOpacity style={styles.shareButton}>
+      <TouchableOpacity
+        style={styles.shareButton}
+        onPress={shareTicket}
+      >
         <Text style={styles.shareButtonText}>
-          Compartir por WhatsApp
+          Compartir Ticket
         </Text>
       </TouchableOpacity>
     </View>
