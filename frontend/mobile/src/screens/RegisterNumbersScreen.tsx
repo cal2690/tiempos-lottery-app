@@ -1,10 +1,35 @@
-import { View, Text, TextInput, TouchableOpacity, StyleSheet, FlatList } from 'react-native';
+import {
+  View,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  StyleSheet,
+  FlatList,
+} from 'react-native';
 import { useState } from 'react';
+import { useRoute, useNavigation, RouteProp } from '@react-navigation/native';
+import { NativeStackNavigationProp } from '@react-navigation/native-stack';
+import { RootStackParamList } from '../navigation/AppNavigator';
 import { TicketNumber } from '../models/TicketNumber';
+
+type RegisterRouteProp = RouteProp<
+  RootStackParamList,
+  'RegisterNumbers'
+>;
+
+type NavigationProp = NativeStackNavigationProp<
+  RootStackParamList,
+  'RegisterNumbers'
+>;
 
 const QUICK_AMOUNTS = [500, 1000, 2000, 5000];
 
 export default function RegisterNumbersScreen() {
+  const route = useRoute<RegisterRouteProp>();
+  const { raffle } = route.params;
+
+  const navigation = useNavigation<NavigationProp>();
+
   const [numberInput, setNumberInput] = useState('');
   const [amountInput, setAmountInput] = useState('');
   const [numbers, setNumbers] = useState<TicketNumber[]>([]);
@@ -16,10 +41,14 @@ export default function RegisterNumbersScreen() {
 
   const addNumber = () => {
     const formattedNumber = formatNumber(numberInput);
+    const parsedNumber = parseInt(formattedNumber);
     const amount = parseInt(amountInput);
 
     if (
       formattedNumber.length !== 2 ||
+      isNaN(parsedNumber) ||
+      parsedNumber < 0 ||
+      parsedNumber > 99 ||
       isNaN(amount) ||
       amount < 100
     ) {
@@ -62,9 +91,13 @@ export default function RegisterNumbersScreen() {
 
   return (
     <View style={styles.container}>
+      {/* INFO SORTEO */}
       <Text style={styles.title}>Registrar Apuestas</Text>
+      <Text style={styles.subtitle}>
+        {raffle.country} - {raffle.label}
+      </Text>
 
-      {/* INPUTS */}
+      {/* INPUT NÚMERO */}
       <TextInput
         style={styles.input}
         placeholder="Número (00-99)"
@@ -74,6 +107,7 @@ export default function RegisterNumbersScreen() {
         onChangeText={setNumberInput}
       />
 
+      {/* INPUT MONTO */}
       <TextInput
         style={styles.input}
         placeholder="Monto"
@@ -82,7 +116,7 @@ export default function RegisterNumbersScreen() {
         onChangeText={setAmountInput}
       />
 
-      {/* QUICK AMOUNTS */}
+      {/* BOTONES RÁPIDOS */}
       <View style={styles.quickContainer}>
         {QUICK_AMOUNTS.map(value => (
           <TouchableOpacity
@@ -95,11 +129,12 @@ export default function RegisterNumbersScreen() {
         ))}
       </View>
 
+      {/* BOTÓN AGREGAR */}
       <TouchableOpacity style={styles.addButton} onPress={addNumber}>
         <Text style={styles.addButtonText}>Agregar</Text>
       </TouchableOpacity>
 
-      {/* LISTA */}
+      {/* LISTA DE NÚMEROS */}
       <FlatList
         data={numbers}
         keyExtractor={item => item.number}
@@ -109,30 +144,68 @@ export default function RegisterNumbersScreen() {
             <Text>₡{item.amount}</Text>
 
             <View style={styles.actions}>
-              <TouchableOpacity onPress={() => updateAmount(item.number, 100)}>
+              <TouchableOpacity
+                onPress={() => updateAmount(item.number, 100)}
+              >
                 <Text style={styles.action}>+100</Text>
               </TouchableOpacity>
 
-              <TouchableOpacity onPress={() => updateAmount(item.number, -100)}>
+              <TouchableOpacity
+                onPress={() => updateAmount(item.number, -100)}
+              >
                 <Text style={styles.action}>-100</Text>
               </TouchableOpacity>
 
-              <TouchableOpacity onPress={() => removeNumber(item.number)}>
-                <Text style={[styles.action, { color: 'red' }]}>Eliminar</Text>
+              <TouchableOpacity
+                onPress={() => removeNumber(item.number)}
+              >
+                <Text style={[styles.action, { color: 'red' }]}>
+                  Eliminar
+                </Text>
               </TouchableOpacity>
             </View>
           </View>
         )}
       />
 
+      {/* TOTAL */}
       <Text style={styles.total}>TOTAL: ₡{total}</Text>
+
+      {/* GENERAR TICKET */}
+      {numbers.length > 0 && (
+        <TouchableOpacity
+          style={styles.generateButton}
+          onPress={() =>
+            navigation.navigate('ConfirmTicket', {
+              raffle,
+              numbers,
+              total,
+            })
+          }
+        >
+          <Text style={styles.generateButtonText}>
+            Generar Ticket
+          </Text>
+        </TouchableOpacity>
+      )}
     </View>
   );
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, padding: 20, backgroundColor: '#fff' },
-  title: { fontSize: 22, fontWeight: 'bold', marginBottom: 20 },
+  container: {
+    flex: 1,
+    padding: 20,
+    backgroundColor: '#fff',
+  },
+  title: {
+    fontSize: 22,
+    fontWeight: 'bold',
+  },
+  subtitle: {
+    marginBottom: 20,
+    color: '#666',
+  },
   input: {
     borderWidth: 1,
     borderColor: '#ccc',
@@ -174,14 +247,25 @@ const styles = StyleSheet.create({
   },
   actions: {
     flexDirection: 'row',
-    gap: 10,
   },
   action: {
     fontSize: 14,
+    marginRight: 12,
   },
   total: {
     marginTop: 20,
     fontSize: 20,
+    fontWeight: 'bold',
+  },
+  generateButton: {
+    backgroundColor: 'green',
+    padding: 16,
+    borderRadius: 8,
+    marginTop: 15,
+  },
+  generateButtonText: {
+    color: '#fff',
+    textAlign: 'center',
     fontWeight: 'bold',
   },
 });

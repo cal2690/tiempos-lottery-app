@@ -1,5 +1,5 @@
-import RegisterNumbersScreen from './src/screens/RegisterNumbersScreen';
+import AppNavigator from './src/navigation/AppNavigator';
 
 export default function App() {
-  return <RegisterNumbersScreen />;
+  return <AppNavigator />;
 }

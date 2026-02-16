@@ -3,9 +3,13 @@ import { useState } from 'react';
 import { getAvailableSchedules } from '../utils/getAvailableSchedules';
 import { CountryCode } from '../constants/schedules';
 import { createActiveRaffle } from '../utils/createActiveRaffle';
+import { useNavigation } from '@react-navigation/native';
+import { NativeStackNavigationProp } from '@react-navigation/native-stack';
+import { RootStackParamList } from '../navigation/AppNavigator';
 
 
 export default function SelectTimeScreen() {
+  const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
   const [country, setCountry] = useState<CountryCode>('CR');
 
   const schedules = getAvailableSchedules(country);
@@ -48,7 +52,8 @@ export default function SelectTimeScreen() {
               schedule.hour,
               schedule.label
             );
-            console.log('Active raffle:', raffle);
+          
+            navigation.navigate('RegisterNumbers', { raffle });
           }}
         >
           <Text>{schedule.label}</Text>
@@ -78,14 +83,13 @@ const styles = StyleSheet.create({
   },
   countryContainer: {
     flexDirection: 'row',
-    gap: 10,
-    marginBottom: 20,
-  },
+  }, 
   countryButton: {
     padding: 10,
     borderWidth: 1,
     borderColor: '#000',
     borderRadius: 8,
+    marginRight: 10,
   },
   selected: {
     backgroundColor: '#ddd',
